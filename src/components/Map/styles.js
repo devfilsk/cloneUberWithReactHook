@@ -28,6 +28,17 @@ export const LocationTimeTextSmall = styled.Text`
   text-align: center;
 `;
 
+export const Back = styled.TouchableOpacity`
+  position: absolute;
+  top: ${Platform.select({
+    ios: 60,
+    android: 40
+  })};
+  left: 20px
+`;
+
+export const Image = styled.Image``;
+
 export const LocationBox = styled.View`
   background: #FFF;
   shadow-color: #0000;

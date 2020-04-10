@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import MapView, { Marker } from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 import Geocoder from 'react-native-geocoding'
@@ -7,9 +7,11 @@ import { getPixelSize } from '~/utils/calcs'
 
 import Search from '../Search';
 import Directions from '../Directions';
+import Details from '../Details';
 
 import markerImage from '~/assets/marker.png';
-import { Container, LocationBox, LocationText, LocationTimeBox, LocationTimeText, LocationTimeTextSmall } from './styles';
+import backImage from '~/assets/back.png';
+import { Container, LocationBox, LocationText, LocationTimeBox, LocationTimeText, LocationTimeTextSmall, Back, Image } from './styles';
 
 Geocoder.init('AIzaSyCu6wanm5hbipWrZIC1sU6fHOIg-IDdIcM');
 
@@ -20,9 +22,12 @@ export default function Map() {
     const [ duration, setDuration ] = useState(null);
     const [ location, setLocation ] = useState(null);
 
-    let refMapView = null;
+    const refMapView = useRef(null);
 
     useEffect(() => {
+
+        if(refMapView.current) {}
+
         async function handleCurrentPosition() {
             Geolocation.getCurrentPosition(
                 async ({ coords: { latitude, longitude }}) => { // success
@@ -64,6 +69,10 @@ export default function Map() {
         })
     }
 
+    function handleBack() {
+        setDestination(null);
+    }
+
   return (
     <Container>
         <MapView 
@@ -71,22 +80,22 @@ export default function Map() {
             region={region}
             showsUserLocation // mostra o icone do usuário
             loadingEnabled
-            ref={el => refMapView = el}
+            ref={refMapView}
         >
             { destination && (
                 <>
                     <Directions 
                         origin={region}
                         destination={destination}
-                        onReady={(result) => {
-                            // console.log("Result ->", result )
+                        onReady={async (result) => {
+                            console.log("Result ->", result )
                             setDuration(Math.floor(result.duration))
-                            refMapView.fitToCoordinates(result.coordinates, {
+                            await refMapView.current.fitToCoordinates(result.coordinates, {
                                 edgePadding: {
                                     right: getPixelSize(50),
                                     left: getPixelSize(50),
                                     top: getPixelSize(50),
-                                    bottom: getPixelSize(50)
+                                    bottom: getPixelSize(350)
                                 }
                             }) // zoom na rota selecionada
                         }}
@@ -116,9 +125,19 @@ export default function Map() {
                 </>
             )}
         </MapView>
-        <Search 
-            onLocationSelected={handleLocationSelected}
-        />
+
+        { destination ? 
+            <>
+                <Back onPress={handleBack}>
+                    <Image source={backImage} />
+                </Back>
+                <Details/> 
+            </>
+        : 
+            <Search 
+                onLocationSelected={handleLocationSelected}
+            />
+        }
     </Container>
   );
 }
