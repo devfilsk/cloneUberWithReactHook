@@ -10,7 +10,7 @@ export default function Directions({ destination, origin, onReady}) {
   }, [])
   return (
     <MapViewDirections
-        destination={destination.destination}
+        destination={destination}
         origin={origin}
         onReady={onReady}
         apikey="AIzaSyCu6wanm5hbipWrZIC1sU6fHOIg-IDdIcM"

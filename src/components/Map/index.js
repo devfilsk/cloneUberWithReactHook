@@ -1,48 +1,66 @@
 import React, { useEffect, useState } from 'react';
-import MapView from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
+import Geocoder from 'react-native-geocoding'
+
+import { getPixelSize } from '~/utils/calcs'
 
 import Search from '../Search';
 import Directions from '../Directions';
 
-import { Container } from './styles';
+import markerImage from '~/assets/marker.png';
+import { Container, LocationBox, LocationText, LocationTimeBox, LocationTimeText, LocationTimeTextSmall } from './styles';
+
+Geocoder.init('AIzaSyCu6wanm5hbipWrZIC1sU6fHOIg-IDdIcM');
 
 export default function Map() {
 
     const [ region, setRegion ] = useState(null);
     const [ destination, setDestination ] = useState(null);
+    const [ duration, setDuration ] = useState(null);
+    const [ location, setLocation ] = useState(null);
 
     let refMapView = null;
 
     useEffect(() => {
-        Geolocation.getCurrentPosition(
-            ({ coords: { latitude, longitude }}) => { // success
-                setRegion({
-                    latitude, 
-                    longitude, 
-                    latitudeDelta: 0.0143,
-                    longitudeDelta: 0.0134
-                })
-            },
-            (error) => { // error
-                console.log("Error -->", error)
-            },
-            {
-                timeout: 2000, // 2 segundos tentando pegar a localização do usuário
-                enableHighAccuracy: true, // pega localização pelo GPS e não pelo wifi
-                maximumAge: 1000,
-            }
-        );
+        async function handleCurrentPosition() {
+            Geolocation.getCurrentPosition(
+                async ({ coords: { latitude, longitude }}) => { // success
+                    const response = await Geocoder.from({ latitude, longitude });
+                    const address = response.results[0].formatted_address;
+                    const location = address.substring(0, address.indexOf(',')) // Pega valor antes da primeira virgula
+                    // console.log("NOOOO->", response);
+
+                    setLocation(location);
+
+                    setRegion({
+                        latitude, 
+                        longitude, 
+                        latitudeDelta: 0.0143,
+                        longitudeDelta: 0.0134
+                    })
+                },
+                (error) => { // error
+                    console.log("Error -->", error)
+                },
+                {
+                    timeout: 2000, // 2 segundos tentando pegar a localização do usuário
+                    enableHighAccuracy: true, // pega localização pelo GPS e não pelo wifi
+                    maximumAge: 1000,
+                }
+            );
+        }
+
+        handleCurrentPosition();
+        
     }, [])
 
     function handleLocationSelected( data, { geometry }) {
         const { location: { lat: latitude, lng: longitude } } = geometry;
         setDestination({
-            destination: {
-                latitude,
-                longitude,
-                title: data.structured_formatting.main_text
-            }
+            latitude,
+            longitude,
+            title: data.structured_formatting.main_text
         })
     }
 
@@ -56,13 +74,46 @@ export default function Map() {
             ref={el => refMapView = el}
         >
             { destination && (
-                <Directions 
-                    origin={region}
-                    destination={destination}
-                    onReady={(result) => {
-                        refMapView.fitToCoordinates(result.coordinates)
-                    }}
-                />
+                <>
+                    <Directions 
+                        origin={region}
+                        destination={destination}
+                        onReady={(result) => {
+                            // console.log("Result ->", result )
+                            setDuration(Math.floor(result.duration))
+                            refMapView.fitToCoordinates(result.coordinates, {
+                                edgePadding: {
+                                    right: getPixelSize(50),
+                                    left: getPixelSize(50),
+                                    top: getPixelSize(50),
+                                    bottom: getPixelSize(50)
+                                }
+                            }) // zoom na rota selecionada
+                        }}
+                    />
+                    <Marker 
+                        coordinate={destination} // com valores de horigem e destino
+                        anchor={{ x: 0, y: 0}} // controla a posição da imagem de marcação no mapa
+                        image={ markerImage } 
+                    >
+                        <LocationBox>
+                            <LocationText>{destination.title}</LocationText>
+                        </LocationBox>
+                    </Marker>
+
+                    <Marker 
+                        coordinate={region} // com valores de horigem e destino
+                        anchor={{ x: 0, y: 0}} // controla a posição da imagem de marcação no mapa
+                    >
+                        <LocationBox>
+                            <LocationTimeBox>
+                                <LocationTimeText>{ duration }</LocationTimeText>
+                                <LocationTimeTextSmall>MIN</LocationTimeTextSmall>
+                            </LocationTimeBox>
+                            <LocationText>{ location }</LocationText>
+                        </LocationBox>
+                    </Marker>
+                </>
             )}
         </MapView>
         <Search 
