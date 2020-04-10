@@ -1,13 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import MapViewDirections from 'react-native-maps-directions';
 
 
 // import { Container } from './styles';
 
 export default function Directions({ destination, origin, onReady}) {
-  useEffect(() => {
-    console.log("Destination -> ", destination)
-  }, [])
+ 
   return (
     <MapViewDirections
         destination={destination}

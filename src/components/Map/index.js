@@ -88,7 +88,7 @@ export default function Map() {
                         origin={region}
                         destination={destination}
                         onReady={async (result) => {
-                            console.log("Result ->", result )
+                            // console.log("Result ->", result )
                             setDuration(Math.floor(result.duration))
                             await refMapView.current.fitToCoordinates(result.coordinates, {
                                 edgePadding: {

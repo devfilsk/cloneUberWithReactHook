@@ -37,7 +37,7 @@ export default function Search({ onLocationSelected }) {
         placeholder="Para onde?"
         placeholderTextColor="#333"
         onPress={(data, details) => {
-            console.log(data, details)
+            // console.log(data, details)
             onLocationSelected(data, details)
         }}
         query={{
