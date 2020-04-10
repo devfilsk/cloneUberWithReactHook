@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Platform } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 // import PlacesInput from 'react-native-places-input';
@@ -6,6 +6,8 @@ import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplet
 // import { Container } from './styles';
 
 export default function Search({ onLocationSelected }) {
+
+    const [ searchFocused, setSearchFocused ] = useState(false);
 
   return (
       <>
@@ -42,7 +44,10 @@ export default function Search({ onLocationSelected }) {
             key: 'AIzaSyCu6wanm5hbipWrZIC1sU6fHOIg-IDdIcM',
             language: 'pt'
         }}
+        listViewDisplayed={searchFocused}
         textInputProps={{
+            onFocus: () => { setSearchFocused(true) }, // Seta variável para mostrar ou não a lista da busca
+            onBlur: () => { setSearchFocused(false) }, // Seta variável para mostrar ou não a lista da busca
             autoCapitalize: "none",
             autoCorrect: false
         }}

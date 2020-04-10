@@ -12,6 +12,8 @@ export default function Map() {
     const [ region, setRegion ] = useState(null);
     const [ destination, setDestination ] = useState(null);
 
+    let refMapView = null;
+
     useEffect(() => {
         Geolocation.getCurrentPosition(
             ({ coords: { latitude, longitude }}) => { // success
@@ -51,13 +53,14 @@ export default function Map() {
             region={region}
             showsUserLocation // mostra o icone do usuário
             loadingEnabled
+            ref={el => refMapView = el}
         >
             { destination && (
                 <Directions 
                     origin={region}
                     destination={destination}
-                    onReady={() => {
-                        
+                    onReady={(result) => {
+                        refMapView.fitToCoordinates(result.coordinates)
                     }}
                 />
             )}
